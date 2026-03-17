@@ -10,6 +10,7 @@ const CoinDetailsPage = lazy(() => import("./pages/coinDetails"));
 
 function App() {
   return (
+    
     <CurrencyContextProvider>
       <div className="flex flex-col min-h-screen w-full bg-slate-950 text-white">
         <Navbar />
