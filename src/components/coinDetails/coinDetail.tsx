@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 const CoinDataPage = ({ coinData }: { coinData: any }) => {
   const market = coinData?.market_data;
-  const volumes = market?.total_volume || {};
+
 
   return (
     <Card className="bg-slate-900 border border-slate-800">

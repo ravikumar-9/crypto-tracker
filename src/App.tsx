@@ -2,16 +2,27 @@ import { lazy, Suspense } from "react";
 import "./App.css";
 import Navbar from "./components/layout/Navbar";
 import { Route, Routes } from "react-router-dom";
-import { CurrencyContextProvider } from "./context/currencyContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const LandingPage = lazy(() => import("./pages/landing"));
 const MarketsPage = lazy(() => import("./pages/markets"));
 const CoinDetailsPage = lazy(() => import("./pages/coinDetails"));
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    },
+  },
+});
+
 function App() {
   return (
-    
-    <CurrencyContextProvider>
+    <QueryClientProvider client={queryClient}>
       <div className="flex flex-col min-h-screen w-full bg-slate-950 text-white">
         <Navbar />
         <Suspense
@@ -27,7 +38,7 @@ function App() {
           © 2026 Crypto Tracker
         </footer>
       </div>
-    </CurrencyContextProvider>
+    </QueryClientProvider>
   );
 }
 

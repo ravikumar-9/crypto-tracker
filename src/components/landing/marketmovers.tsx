@@ -1,22 +1,18 @@
-import { useCurrency } from "@/context/currencyContext";
 import { Coin } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const MarketMovers = () => {
   const [gainers, setGainers] = useState<Coin[]>([]);
   const [losers, setLosers] = useState<Coin[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const { currency } = useCurrency();
 
   const fetchMovers = async () => {
     try {
-      setLoading(true);
-
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`
       );
 
       const data: Coin[] = await response.json();
@@ -34,14 +30,13 @@ const MarketMovers = () => {
       setLosers(topLosers);
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
-  useEffect(() => {
-    fetchMovers();
-  }, [currency]);
+ const {data,isLoading:loading}=useQuery({
+  queryKey:["top_gainers"],
+  queryFn:fetchMovers,
+ })
 
   const renderCoins = (coins: Coin[]) =>
     coins?.map((coin) => (

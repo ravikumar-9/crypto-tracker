@@ -1,26 +1,29 @@
 import CoinChart from "@/components/coinDetails/coinChart";
 import CoinDataPage from "@/components/coinDetails/coinDetail";
-import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 import { useParams } from "react-router-dom";
 
 const coinDetails = () => {
-  const [coinDetails, setCoinDetails] = useState<any>("");
   const { coinId } = useParams();
 
-  useEffect(() => {
-    const fetchCoinDetails = async () => {
-      try {
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${coinId}`
-        );
-        const data = await response?.json();
-        setCoinDetails(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchCoinDetails();
-  }, []);
+  const fetchCoinDetails = async () => {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${coinId}`
+      );
+      const data = await response?.json();
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const { data:coinDetails} = useQuery({
+    queryKey: ["coin_details"],
+    queryFn: fetchCoinDetails,
+    enabled: coinId ? true : false,
+  });
 
   return (
     <main className="space-y-6 p-8">

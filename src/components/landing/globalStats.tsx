@@ -1,37 +1,24 @@
-import React, { useEffect, useState } from "react";
-
-interface GlobalData {
-  active_cryptocurrencies: number;
-  markets: number;
-  ongoing_icos: number;
-  total_market_cap: { usd: number };
-  total_volume: { usd: number };
-  market_cap_percentage: { btc: number; eth: number };
-  market_cap_change_percentage_24h_usd: number;
-}
+import { GlobalData } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
 const GlobalStats = () => {
-  const [data, setData] = useState<GlobalData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const fetchGlobalStats = async () => {
+    try {
+      const response = await fetch("https://api.coingecko.com/api/v3/global");
 
-  useEffect(() => {
-    const fetchGlobalStats = async () => {
-      try {
-        const response = await fetch(
-          "https://api.coingecko.com/api/v3/global"
-        );
+      const result = await response.json();
+      return result?.data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-        const result = await response.json();
-        setData(result.data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGlobalStats();
-  }, []);
+  const { data, isLoading: loading } = useQuery<GlobalData>({
+    queryKey: ["stats"],
+    queryFn: fetchGlobalStats,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const formatNumber = (num: number) =>
     Intl.NumberFormat("en-US", {
@@ -86,16 +73,12 @@ const GlobalStats = () => {
 
       <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
         <p className="text-slate-400 text-xs">Markets</p>
-        <p className="text-lg font-semibold">
-          {data.markets.toLocaleString()}
-        </p>
+        <p className="text-lg font-semibold">{data.markets.toLocaleString()}</p>
       </div>
 
       <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
         <p className="text-slate-400 text-xs">Ongoing ICOs</p>
-        <p className="text-lg font-semibold">
-          {data.ongoing_icos}
-        </p>
+        <p className="text-lg font-semibold">{data.ongoing_icos}</p>
       </div>
 
       <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">

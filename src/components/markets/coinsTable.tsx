@@ -1,6 +1,5 @@
-import { useCurrency } from "@/context/currencyContext";
 import { Coin } from "@/types";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Table,
   TableBody,
@@ -10,45 +9,32 @@ import {
   TableRow,
 } from "../ui/table";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../ui/pagination";
 import { Skeleton } from "../ui/skeleton";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 const CoinsTable = () => {
-  const [coinsList, setCoinsList] = useState<Coin[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const { currency, symbol } = useCurrency();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCoins = async () => {
-      try {
-        setIsLoading(true);
+  const fetchCoins = async () => {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=100&page=1&sparkline=false`
+      );
 
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=30&page=${currentPage}&sparkline=false`
-        );
+      const data = await response.json();
+      return data ?? [];
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-        const data = await response.json();
-        setCoinsList(data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCoins();
-  }, [currentPage, currency]);
+  const { data: coinsList = [], isLoading } = useQuery<Coin[]>({
+    queryKey: ["coins_list"],
+    queryFn: fetchCoins,
+    staleTime: 3 * 60 * 1000,
+  });
 
   return (
     <>
@@ -117,65 +103,61 @@ const CoinsTable = () => {
               ))
             ) : coinsList?.length > 0 ? (
               coinsList?.map((coin) => (
-                  <TableRow
-                    key={coin?.id}
-                    onClick={() => navigate(`/coins/${coin?.id}`)}
-                    className="border-b border-slate-800 hover:bg-slate-800/50 transition"
-                  >
-                    <TableCell className="text-slate-400">
-                      {coin?.market_cap_rank}
-                    </TableCell>
+                <TableRow
+                  key={coin?.id}
+                  onClick={() => navigate(`/coins/${coin?.id}`)}
+                  className="border-b border-slate-800 hover:bg-slate-800/50 transition"
+                >
+                  <TableCell className="text-slate-400">
+                    {coin?.market_cap_rank}
+                  </TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={coin?.image}
-                          alt={coin?.name}
-                          className="h-8 w-8"
-                        />
-                        <div>
-                          <p className="font-medium text-white">{coin.name}</p>
-                          <p className="text-xs text-slate-400 uppercase">
-                            {coin?.symbol}
-                          </p>
-                        </div>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={coin?.image}
+                        alt={coin?.name}
+                        className="h-8 w-8"
+                      />
+                      <div>
+                        <p className="font-medium text-white">{coin.name}</p>
+                        <p className="text-xs text-slate-400 uppercase">
+                          {coin?.symbol}
+                        </p>
                       </div>
-                    </TableCell>
+                    </div>
+                  </TableCell>
 
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {symbol}
-                          {coin?.current_price?.toLocaleString()}
-                        </span>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-white">
+                        ${coin?.current_price?.toLocaleString()}
+                      </span>
 
-                        <span
-                          className={`text-xs ${
-                            (coin?.price_change_percentage_24h ?? 0) > 0
-                              ? "text-green-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {(coin?.price_change_percentage_24h ?? 0).toFixed(2)}%
-                        </span>
-                      </div>
-                    </TableCell>
+                      <span
+                        className={`text-xs ${
+                          (coin?.price_change_percentage_24h ?? 0) > 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {(coin?.price_change_percentage_24h ?? 0).toFixed(2)}%
+                      </span>
+                    </div>
+                  </TableCell>
 
-                    <TableCell className="text-right text-green-400">
-                      {symbol}
-                      {coin.high_24h?.toLocaleString()}
-                    </TableCell>
+                  <TableCell className="text-right text-green-400">
+                    ${coin.high_24h?.toLocaleString()}
+                  </TableCell>
 
-                    <TableCell className="text-right text-red-400">
-                      {symbol}
-                      {coin?.low_24h?.toLocaleString()}
-                    </TableCell>
+                  <TableCell className="text-right text-red-400">
+                    ${coin?.low_24h?.toLocaleString()}
+                  </TableCell>
 
-                    <TableCell className="text-right">
-                      {symbol}
-                      {coin?.market_cap?.toLocaleString()}
-                    </TableCell>
-                  </TableRow>
+                  <TableCell className="text-right">
+                    ${coin?.market_cap?.toLocaleString()}
+                  </TableCell>
+                </TableRow>
               ))
             ) : (
               <TableRow className="hover:bg-transparent">
@@ -191,7 +173,7 @@ const CoinsTable = () => {
         </Table>
       </div>
 
-      <Pagination className="mt-6">
+      {/* <Pagination className="mt-6">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
@@ -215,7 +197,7 @@ const CoinsTable = () => {
             />
           </PaginationItem>
         </PaginationContent>
-      </Pagination>
+      </Pagination> */}
     </>
   );
 };

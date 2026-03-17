@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useCurrency } from "@/context/currencyContext";
 import {
   LineChart,
   Line,
@@ -12,39 +11,33 @@ import {
 import { Button } from "../ui/button";
 import { formatTime } from "@/lib/utils";
 import { Card } from "../ui/card";
+import { useQuery } from "@tanstack/react-query";
 
 const CoinChart = ({ coinId }: { coinId: string | undefined }) => {
-  const { currency } = useCurrency();
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const [days, setDays] = useState(7);
 
-  useEffect(() => {
-    const fetchChart = async () => {
-      try {
-        setLoading(true);
+  const fetchChart = async () => {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=USD&days=${days}`
+      );
 
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=${currency}&days=${days}`
-        );
+      const data = await response.json();
+      const formatted = data?.prices?.map((item: any) => ({
+        date: formatTime(days, item[0]),
+        price: item[1],
+      }));
+      return formatted;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-        const data = await response.json();
-
-        const formatted = data?.prices?.map((item: any) => ({
-          date: formatTime(days, item[0]),
-          price: item[1],
-        }));
-
-        setChartData(formatted);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (coinId) fetchChart();
-  }, [coinId, currency, days]);
+  const {data:chartData,isLoading:loading} = useQuery({
+    queryKey: ["coin_chart", days],
+    queryFn: fetchChart,
+    enabled: coinId ? true : false,
+  });
 
   if (loading) return <p className="text-slate-400">Loading chart...</p>;
 
