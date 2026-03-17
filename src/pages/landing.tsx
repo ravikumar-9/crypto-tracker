@@ -3,6 +3,7 @@ import GlobalStats from "@/components/landing/globalStats";
 import MarketMovers from "@/components/landing/marketmovers";
 import { Button } from "@/components/ui/button";
 import React from "react";
+import { Link } from "react-router-dom";
 
 const LandingPage = () => {
   return (
@@ -24,7 +25,9 @@ const LandingPage = () => {
       <section className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">Trending Coins</h2>
+          <Link to="/markets">
           <Button variant="primary">View All Coins</Button>
+          </Link>
         </div>
 
         <DashboardCarousel />
