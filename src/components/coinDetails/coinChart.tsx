@@ -13,11 +13,7 @@ import { Button } from "../ui/button";
 import { formatTime } from "@/lib/utils";
 import { Card } from "../ui/card";
 
-interface Props {
-  coinId: string | undefined;
-}
-
-const CoinChart = ({ coinId }: Props) => {
+const CoinChart = ({ coinId }: { coinId: string | undefined }) => {
   const { currency } = useCurrency();
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,17 +74,13 @@ const CoinChart = ({ coinId }: Props) => {
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-
           <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 12 }} />
-
           <YAxis
             stroke="#94a3b8"
             tick={{ fontSize: 12 }}
             domain={["auto", "auto"]}
           />
-
           <Tooltip />
-
           <Line
             type="monotone"
             dataKey="price"

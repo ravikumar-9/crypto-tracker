@@ -15,7 +15,6 @@ const coinDetails = () => {
         );
         const data = await response?.json();
         setCoinDetails(data);
-        console.log(data);
       } catch (error) {
         console.log(error);
       }
